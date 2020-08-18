@@ -14,6 +14,7 @@
         </receiver>
 
 
-        <service android:name=".service.AlarmService" />
+        <service android:name=".service.AlarmService"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 </manifest>
