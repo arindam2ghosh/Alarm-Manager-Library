@@ -10,19 +10,25 @@ import android.util.Log;
 import com.arindam.alarmmanager.database.AlarmDAO;
 import com.arindam.alarmmanager.model.Alarm;
 import com.arindam.alarmmanager.receiver.AlarmReceiver;
+import com.arindam.alarmmanager.util.Util;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class ArinAlarmController {
 
-    public static final String ALARM_ALERT_ACTION = "com.simplaapliko.wakeup.ALARM_ALERT_ACTION";
+    public static final String ALARM_ALERT_ACTION = "com.arindam.alarmmanager.ALARM_ALERT_ACTION";
 
-    public static final String EXTRA_ALARM_ID = "com.simplaapliko.wakeup.EXTRA_ALARM_ID";
-    public static final String EXTRA_EXTERNAL_ID = "com.simplaapliko.wakeup.EXTRA_EXTERNAL_ID";
-    public static final String EXTRA_TITLE = "com.simplaapliko.wakeup.EXTRA_TITLE";
-    public static final String EXTRA_MESSAGE = "com.simplaapliko.wakeup.EXTRA_MESSAGE";
-    public static final String EXTRA_WHEN = "com.simplaapliko.wakeup.EXTRA_WHEN";
-    public static final String EXTRA_HANDLER = "com.simplaapliko.wakeup.EXTRA_HANDLER";
+    public static final String EXTRA_ALARM_ID = "com.arindam.alarmmanager.EXTRA_ALARM_ID";
+    public static final String EXTRA_EXTERNAL_ID = "com.arindam.alarmmanager.EXTRA_EXTERNAL_ID";
+    public static final String EXTRA_PERIODIC = "com.arindam.alarmmanager.EXTRA_PERIODIC";
+    public static final String EXTRA_PERIODIC_TYPE = "com.arindam.alarmmanager.EXTRA_PERIODIC_TYPE";
+    public static final String EXTRA_PERIODIC_VAL = "com.arindam.alarmmanager.EXTRA_PERIODIC_VAL";
+    public static final String EXTRA_PERIODIC_STARTTIME = "com.arindam.alarmmanager.EXTRA_PERIODIC_STARTTIME";
+    public static final String EXTRA_TITLE = "com.arindam.alarmmanager.EXTRA_TITLE";
+    public static final String EXTRA_MESSAGE = "com.arindam.alarmmanager.EXTRA_MESSAGE";
+    public static final String EXTRA_WHEN = "com.arindam.alarmmanager.EXTRA_WHEN";
+    public static final String EXTRA_HANDLER = "com.arindam.alarmmanager.EXTRA_HANDLER";
 
     private static final String TAG = "AlarmController";
 
@@ -34,6 +40,7 @@ public class ArinAlarmController {
         long id = new AlarmDAO(context)
                 .insert(alarm);
 
+        Log.i("Arindam", "Alarm id: "+id);
         alarm.setId(id);
 
         enableAlarm(context, alarm);
@@ -82,29 +89,30 @@ public class ArinAlarmController {
         intent.setAction(ALARM_ALERT_ACTION);
         intent.putExtra(EXTRA_ALARM_ID, alarm.getId());
         intent.putExtra(EXTRA_EXTERNAL_ID, alarm.getExternalId());
+        intent.putExtra(EXTRA_PERIODIC, alarm.isPeriodic());
+        intent.putExtra(EXTRA_PERIODIC_TYPE, alarm.getPeriodicType());
+        intent.putExtra(EXTRA_PERIODIC_VAL, alarm.getPeriodicValue());
+        intent.putExtra(EXTRA_PERIODIC_STARTTIME, alarm.getPeriodicStartTime());
+        intent.putExtra(EXTRA_PERIODIC, alarm.isPeriodic());
         intent.putExtra(EXTRA_TITLE, alarm.getTitle());
         intent.putExtra(EXTRA_MESSAGE, alarm.getMessage());
         intent.putExtra(EXTRA_WHEN, alarm.getTime());
         intent.putExtra(EXTRA_HANDLER, alarm.getAlarmHandleListener());
 
         int alarmId = (int) alarm.getId();
-        long triggerAt = alarm.getTime();
 
-        PendingIntent sender = PendingIntent.getBroadcast(
-                context, alarmId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent sender = PendingIntent.getBroadcast(context, alarmId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager.AlarmClockInfo alarmClockInfo;
+        if(!alarm.isPeriodic()) {
+            long triggerAt = alarm.getTime();
+            alarmClockInfo = new AlarmManager.AlarmClockInfo(triggerAt, sender);
+        }else{
+            Calendar calendar = validateTime(alarm.getPeriodicStartTime(), alarm.getPeriodicType(), alarm.getPeriodicValue());
+            alarmClockInfo = new AlarmManager.AlarmClockInfo(calendar.getTimeInMillis(), sender);
+        }
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (alarm.isExact()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, sender);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAt, sender);
-            } else {
-                alarmManager.set(alarm.getType(), triggerAt, sender);
-            }
-        } else {
-            alarmManager.setRepeating(alarm.getType(), triggerAt, AlarmManager.INTERVAL_DAY, sender);
-        }
+        alarmManager.setAlarmClock(alarmClockInfo, sender);
     }
 
     public void disableAlarm(Context context, Alarm alarm) {
@@ -122,5 +130,28 @@ public class ArinAlarmController {
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(sender);
+    }
+
+    public Calendar validateTime(long timeInMillis, int periodicType, int periodicVal){
+
+        Calendar now = Calendar.getInstance();
+
+        Log.i("Arindam", "Now: "+ now.getTime().toString());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeInMillis);
+        do {
+            if (periodicType == Alarm.TIMEUNIT_MILLISECOND)
+                calendar.add(Calendar.MILLISECOND, periodicVal);
+            else if (periodicType == Alarm.TIMEUNIT_SECOND)
+                calendar.add(Calendar.SECOND, periodicVal);
+            else if (periodicType == Alarm.TIMEUNIT_MINUTE)
+                calendar.add(Calendar.MINUTE, periodicVal);
+            else if (periodicType == Alarm.TIMEUNIT_HOUR)
+                calendar.add(Calendar.HOUR, periodicVal);
+
+            Log.i("Arindam", "Adjust: "+ calendar.getTime().toString());
+        }while (now.after(calendar));
+
+        return calendar;
     }
 }

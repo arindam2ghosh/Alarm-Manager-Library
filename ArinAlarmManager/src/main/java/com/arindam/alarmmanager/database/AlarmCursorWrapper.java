@@ -23,8 +23,10 @@ public class AlarmCursorWrapper extends CursorWrapper {
 
         long id = getLong(AlarmDAO.Columns.ID_INDEX);
         long externalId = getLong(AlarmDAO.Columns.EXTERNAL_ID_INDEX);
-        boolean exact = getInt(AlarmDAO.Columns.IS_EXACT_INDEX) == 1;
-        int type = getInt(AlarmDAO.Columns.TYPE_INDEX);
+        boolean exact = getInt(AlarmDAO.Columns.IS_PERIODIC_INDEX) == 1;
+        int periodic_type = getInt(AlarmDAO.Columns.PERIODIC_TYPE_INDEX);
+        int periodic_value = getInt(AlarmDAO.Columns.PERIODIC_VALUE_INDEX);
+        long periodic_start_time = getLong(AlarmDAO.Columns.PERIODIC_START_TIME_INDEX);
         long time = getLong(AlarmDAO.Columns.TIME_INDEX);
         boolean enabled = getInt(AlarmDAO.Columns.ENABLED_INDEX) == 1;
         String title = getString(AlarmDAO.Columns.TITLE_INDEX);
@@ -35,8 +37,10 @@ public class AlarmCursorWrapper extends CursorWrapper {
         Alarm alarm = new Alarm();
         alarm.setId(id);
         alarm.setExternalId(externalId);
-        alarm.setExact(exact);
-        alarm.setType(type);
+        alarm.setPeriodic(exact);
+        alarm.setPeriodicType(periodic_type);
+        alarm.setPeriodicValue(periodic_value);
+        alarm.setPeriodicStartTime(periodic_start_time);
         alarm.setTime(time);
         alarm.setEnabled(enabled);
         alarm.setTitle(title);

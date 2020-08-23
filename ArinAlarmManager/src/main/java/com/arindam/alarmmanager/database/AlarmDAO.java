@@ -19,8 +19,10 @@ public class AlarmDAO {
     public static class Columns implements BaseColumns {
 
         public static final String EXTERNAL_ID = "external_id";
-        public static final String IS_EXACT = "is_exact";
-        public static final String TYPE = "type";
+        public static final String IS_PERIODIC = "is_periodic";
+        public static final String PERIODIC_TYPE = "periodic_type";
+        public static final String PERIODIC_VALUE = "periodic_value";
+        public static final String PERIODIC_START_TIME = "periodic_start_time";
         public static final String TIME = "time";
         public static final String ENABLED = "enabled";
         public static final String TITLE = "title";
@@ -30,14 +32,16 @@ public class AlarmDAO {
 
         public static final int ID_INDEX = 0;
         public static final int EXTERNAL_ID_INDEX = 1;
-        public static final int IS_EXACT_INDEX = 2;
-        public static final int TYPE_INDEX = 3;
-        public static final int TIME_INDEX = 4;
-        public static final int ENABLED_INDEX = 5;
-        public static final int TITLE_INDEX = 6;
-        public static final int MESSAGE_INDEX = 7;
-        public static final int KEEP_AFTER_REBOOT_INDEX = 8;
-        public static final int ALARM_HANDLE_LISTENER_INDEX = 9;
+        public static final int IS_PERIODIC_INDEX = 2;
+        public static final int PERIODIC_TYPE_INDEX = 3;
+        public static final int PERIODIC_VALUE_INDEX = 4;
+        public static final int PERIODIC_START_TIME_INDEX = 5;
+        public static final int TIME_INDEX = 6;
+        public static final int ENABLED_INDEX = 7;
+        public static final int TITLE_INDEX = 8;
+        public static final int MESSAGE_INDEX = 9;
+        public static final int KEEP_AFTER_REBOOT_INDEX = 10;
+        public static final int ALARM_HANDLE_LISTENER_INDEX = 11;
     }
 
     private Context mContext;
@@ -53,8 +57,10 @@ public class AlarmDAO {
             columns = new String[]{
                     Columns._ID,
                     Columns.EXTERNAL_ID,
-                    Columns.IS_EXACT,
-                    Columns.TYPE,
+                    Columns.IS_PERIODIC,
+                    Columns.PERIODIC_TYPE,
+                    Columns.PERIODIC_VALUE,
+                    Columns.PERIODIC_START_TIME,
                     Columns.TIME,
                     Columns.ENABLED,
                     Columns.TITLE,
@@ -184,8 +190,10 @@ public class AlarmDAO {
     private ContentValues toContentValues(Alarm alarm) {
         ContentValues cv = new ContentValues();
         cv.put(Columns.EXTERNAL_ID, alarm.getExternalId());
-        cv.put(Columns.IS_EXACT, alarm.isExact());
-        cv.put(Columns.TYPE, alarm.getType());
+        cv.put(Columns.IS_PERIODIC, alarm.isPeriodic());
+        cv.put(Columns.PERIODIC_TYPE, alarm.getPeriodicType());
+        cv.put(Columns.PERIODIC_VALUE, alarm.getPeriodicValue());
+        cv.put(Columns.PERIODIC_START_TIME, alarm.getPeriodicStartTime());
         cv.put(Columns.TIME, alarm.getTime());
         cv.put(Columns.ENABLED, alarm.isEnabled() ? 1 : 0);
         cv.put(Columns.TITLE, alarm.getTitle());

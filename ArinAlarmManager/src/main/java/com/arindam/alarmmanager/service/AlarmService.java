@@ -1,30 +1,27 @@
 package com.arindam.alarmmanager.service;
 
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-
-import androidx.annotation.NonNull;
-import androidx.core.app.JobIntentService;
 
 import com.arindam.alarmmanager.ArinAlarmController;
 import com.arindam.alarmmanager.database.AlarmDAO;
 import com.arindam.alarmmanager.listener.AlarmHandleListener;
+import com.arindam.alarmmanager.model.Alarm;
 import com.arindam.alarmmanager.util.Util;
 
-public class AlarmService extends JobIntentService {
+import java.util.Date;
+
+public class AlarmService extends IntentService {
 
     private static final String TAG = "Arindam";
-    public static final int JOB_ID = 1;
 
-    public static void enqueueWork(Context context, Intent work) {
-        enqueueWork(context, AlarmService.class, JOB_ID, work);
+    public AlarmService() {
+        super("AlarmService");
     }
 
-
     @Override
-    protected void onHandleWork(@NonNull Intent intent) {
+    protected void onHandleIntent(Intent intent) {
         Log.d(TAG, "onHandleIntent");
 
         if (intent == null) {
@@ -38,9 +35,15 @@ public class AlarmService extends JobIntentService {
         // get alarm from extras
         long notFound = -1;
         long alarmId = intent.getLongExtra(ArinAlarmController.EXTRA_ALARM_ID, notFound);
+        boolean isPeriodic = intent.getBooleanExtra(ArinAlarmController.EXTRA_PERIODIC, false);
+        if(isPeriodic){
+            Alarm alarm = alarmDAO.selectById(alarmId);
+            alarm.setPeriodicStartTime(new Date().getTime());
+            new ArinAlarmController().setAlarm(this, alarm);
+        }
 
         // delete alarm from the database
-        //alarmDAO.delete(alarmId);
+        alarmDAO.delete(alarmId);
 
         // get listener using class name and reflection
         String handler = intent.getStringExtra(ArinAlarmController.EXTRA_HANDLER);

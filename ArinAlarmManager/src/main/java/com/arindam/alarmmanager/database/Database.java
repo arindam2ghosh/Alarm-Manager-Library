@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class Database extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "com.simplaapliko.wakeup.db";
+    private static final String DATABASE_NAME = "com.arindam.alarmmanager.db";
     private static final int DATABASE_VERSION = 1;
 
     private Database(Context context) {
@@ -18,8 +18,10 @@ public class Database extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + AlarmDAO.TABLE + " (" +
                         AlarmDAO.Columns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         AlarmDAO.Columns.EXTERNAL_ID + " INTEGER NOT NULL, " +
-                        AlarmDAO.Columns.IS_EXACT + " INTEGER NOT NULL, " +
-                        AlarmDAO.Columns.TYPE + " INTEGER NOT NULL, " +
+                        AlarmDAO.Columns.IS_PERIODIC + " INTEGER NOT NULL, " +
+                        AlarmDAO.Columns.PERIODIC_TYPE + " INTEGER NOT NULL, " +
+                        AlarmDAO.Columns.PERIODIC_VALUE + " INTEGER NOT NULL, " +
+                        AlarmDAO.Columns.PERIODIC_START_TIME + " INTEGER, " +
                         AlarmDAO.Columns.TIME + " INTEGER, " +
                         AlarmDAO.Columns.ENABLED + " INTEGER NOT NULL, " +
                         AlarmDAO.Columns.TITLE + " TEXT, " +
